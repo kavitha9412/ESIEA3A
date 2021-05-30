@@ -1,16 +1,21 @@
 package com.example.esiea3a.presentation.list
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import androidx.navigation.fragment.findNavController
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.esiea3a.R
-import kotlinx.android.synthetic.main.fragment_harrypotter_list.*
+import com.example.esiea3a.presentation.list.api.HarryApi
+import com.example.esiea3a.presentation.list.api.HarrypotterResponse
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+
 
 /**
  * A simple [Fragment] subclass as the default destination in the navigation.
@@ -38,14 +43,28 @@ class HarrypotterListFragment : Fragment() {
             adapter = this@HarrypotterListFragment.adapter
         }
 
-        val harryList = arrayListOf<Harrypotter>().apply {
-            add(Harrypotter("Harry Potter"))
-            add(Harrypotter("Ron Weasley"))
-            add(Harrypotter("Harmione Granger"))
-            add(Harrypotter("Draco Malfoy"))
 
-        }
-         adapter.updateList(harryList)
+        val retrofit = Retrofit.Builder()
+            .baseUrl("https://raw.githubusercontent.com/kavitha9412/Esiea3A/master/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+
+        val harryApi: HarryApi = retrofit.create(HarryApi::class.java)
+
+        harryApi.getHarrypotterList().enqueue(object: Callback<HarrypotterResponse>{
+            override fun onFailure(call: Call<HarrypotterResponse>, t: Throwable) {
+                TODO("Not yet implemented")
+            }
+
+            override fun onResponse(call: Call<HarrypotterResponse>, response: Response<HarrypotterResponse>) {
+                if(response.isSuccessful && response.body() !=null){
+                    val harrypotterResponse = response.body()!!
+                    adapter.updateList(harrypotterResponse.result)
+                }
+
+            }
+        })
+         //adapter.updateList(harryList)
 
     }
 }
